@@ -5,7 +5,7 @@ edit : lex.yy.o
 lex.yy.o : lex.yy.c
 	gcc -c lex.yy.c
 
-lex.yy.c : lextemplate.l
+lex.yy.c : scanner.l
 	lex scanner.l
 
 clean :
