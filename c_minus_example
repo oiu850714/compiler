@@ -1,0 +1,23 @@
+// comment
+/* comment */
+/* comment one
+comment two */
+
+"wwwwwwwww\
+wwwwwwww"
+
+#pragma source on
+#pragma token on
+#pragma statistic on
+void main()
+{
+ int a;
+ double b;
+ print "hell world";
+ a = 1+1;
+ b = 1.23;
+ a<+b;
+ if (a > 1){
+  b = b*1.23e-1;
+ } 
+}

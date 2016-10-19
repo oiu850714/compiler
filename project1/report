@@ -1,0 +1,13 @@
+The ability of my scanner:
+	My scanner implements the spec of HW1.
+
+Environment:
+	Linux workstation of CS
+
+How to run my scanner:
+	1. put scanner.l and Makefile in same directory.
+	2. type "make" to build the scanner executable.
+	3. You can run scanner without parameters, 
+	   and the scanner will scan the stdin and output the token string;
+	   or you can run scanner with one filename, 
+	   and the scanner will scan this file and output the token string.
