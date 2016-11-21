@@ -312,7 +312,6 @@ return	{
 		LIST;
 		BEGIN Last_State;
 	}
-
 \/\/.*	{
 		LIST;
 	}

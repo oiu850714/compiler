@@ -8,9 +8,28 @@ extern char *yytext;            /* declared by lex */
 extern char buf[256];           /* declared in lex.l */
 %}
 
-%token SEMICOLON    /* ; */
-%token ID           /* identifier */
-%token INT          /* keyword */
+/* delimiter */
+%token COMMA SEMICOLON /* , and ; */
+%token L_PARAN R_PARAN L_SQUARE R_SQUARE L_BRACE R_BRACE /* ( ) [ ] { } */
+
+/* operator */
+%token PLUS SUB_AND_MINUS MULTI DIV MOD /* + - * / % */
+%token ASSIGN /* = */
+%token LESS LESS_EQUAL NOT_EQUAL GREAT_EQUAL GREAT EQUAL /* < <= != >= > == */
+%token LOGI_AND LOGI_OR LOGI_NOT /* && || ! */
+
+/* keyword */
+%token WHILE DO IF ELSE TRUE FALSE FOR
+%token INT PRINT CONST READ BOOLEAN BOOL
+%token VOID FLOAT DOUBLE STRING CONTINUE BREAK RETURN
+/* while do if else true false for int print const read boolean
+ bool void float double string continue break return */
+
+/* identifier */
+%token ID
+
+/* constant literal */
+%token INT_CONST FLOAT_CONST SCIEN_CONST STR_CONST
 
 %%
 
