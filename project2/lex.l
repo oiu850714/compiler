@@ -115,7 +115,7 @@ id *new_id();
 <OTHER>\n		{
 		LIST;
   	      if (Opt_Source)
-  	        printf("%d:%s\n", linenum, buf);
+  	        //printf("%d:%s\n", linenum, buf);
   	      linenum++;
   	      buf[0] = '\0';
 		  BEGIN INITIAL;
@@ -298,7 +298,7 @@ return	{
 		LIST;
 		if(Last_State == OTHER)Last_State = INITIAL;
 		if (Opt_Source)
-  	        printf("%d:%s\n", linenum, buf);
+  	        //printf("%d:%s\n", linenum, buf);
 		linenum++;
                 buf[0] = '\0';
 	}
@@ -319,7 +319,7 @@ return	{
 \n	{
   	      LIST;
   	      if (Opt_Source)
-  	        printf("%d:%s\n", linenum, buf);
+  	        //printf("%d:%s\n", linenum, buf);
   	      linenum++;
   	      buf[0] = '\0';
         }
