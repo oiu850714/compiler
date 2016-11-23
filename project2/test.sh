@@ -12,6 +12,8 @@ do
 	./parser "${x}"
 done
 
+echo "sample_test!!!"
+
 for x in $(ls sample_test_and_result/*.cm);
 do
 	echo "${x}"
