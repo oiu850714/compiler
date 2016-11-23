@@ -1,13 +1,14 @@
 %{
 #include <bsd/string.h>
-
+#include "y.tab.h"
+	
 #define MAX_LINE_LENGTH 257
 #define MAX_ID_LENGTH 257
 #define MAX_STRING_LENGTH 257
 #define LIST                strlcat(buf, yytext, MAX_LINE_LENGTH)
-#define token(t)            {LIST; if (Opt_Token) printf("<%s>\n", #t);}
-#define tokenInteger(t, i)  {LIST; if (Opt_Token) printf("<%s:%d>\n", t, i);}
-#define tokenString(t, s)   {LIST; if (Opt_Token) printf("<%s:%s>\n", t, s);}
+#define token(t)            {LIST; if (Opt_Token) /*printf("<%s>\n", #t)*/;}
+#define tokenInteger(t, i)  {LIST; if (Opt_Token) /*printf("<%s:%d>\n", t, i)*/;}
+#define tokenString(t, s)   {LIST; if (Opt_Token) /*printf("<%s:%s>\n", t, s)*/;}
 int Opt_Source = 1;
 int Opt_Token = 1;
 int Opt_Statistic =1;
@@ -115,7 +116,7 @@ id *new_id();
 <OTHER>\n		{
 		LIST;
   	      if (Opt_Source)
-  	        //printf("%d:%s\n", linenum, buf);
+  	        printf("%d:%s\n", linenum, buf);
   	      linenum++;
   	      buf[0] = '\0';
 		  BEGIN INITIAL;
@@ -134,106 +135,189 @@ id *new_id();
 	}
 "("	{
 		tokenString("delim", "(");
+		return L_PARAN;
 	}
 ")"	{
 		tokenString("delim", ")");
+		return R_PARAN;
 	}
 ","	{
 		tokenString("delim", ",");
+		return COMMA;
 	}
 ";"	{
 		tokenString("delim", ";");
+		return SEMICOLON;
 	}
 "["	{
 		tokenString("delim", "[");
+		return L_SQUARE;
 	}
 "]"	{
 		tokenString("delim", "]");
+		return R_SQUARE;
 	}
 "{"	{
 		tokenString("delim", "{");
+		return L_BRACE;
 	}
 "}"	{
 		tokenString("delim", "}");
+		return R_BRACE;
 	}
 "+"	{
 		token("+");
+		return PLUS;
 	}
 "-"	{
 		token("-");
+		return SUB_AND_MINUS;
 	}
 "*"	{
 		token("*");
+		return MULTI;
 	}
 "/"	{
 		token("/");
+		return DIV;
 	}
 "%"	{
 		token("%");
+		return MOD;
 	}
 "="	{
 		token("=");
+		return ASSIGN;
 	}
 "<"	{
 		token("<");
+		return LESS;
 	}
 "<="	{
 		token("<=");
+		return LESS_EQUAL;
 	}
 "!="	{
 		token("!=");
+		return NOT_EQUAL;
 	}
 ">="	{
 		token(">=");
+		return GREAT_EQUAL;
 	}
 ">"	{
 		token(">");
+		return GREAT;
 	}
 "=="	{
 		token("==");
+		return EQUAL;
 	}
 "&&"	{
 		token("&&");
+		return LOGI_AND;
 	}
 "||"	{
 		token("||");
+		return LOGI_OR;
 	}
 "!"	{
 		token("!");
+		return LOGI_NOT;
 	}
-read |
-boolean |
-while |
-do |
-if |
-else |
-true | 
-false | 
-for | 
-const | 
-int | 
-print |
-bool | 
-void | 
-float | 
-double | 
-string |
-continue | 
-break | 
+read	{
+		tokenString("KW", yytext);
+		return READ; 
+	}
+boolean	{
+		tokenString("KW", yytext);
+	}
+while 	{
+		tokenString("KW", yytext);
+		return WHILE; 
+	}
+do 		{
+		tokenString("KW", yytext);
+		return DO;
+	}
+if 		{
+		tokenString("KW", yytext);
+		return IF;
+	}
+else 	{
+		tokenString("KW", yytext);
+		return ELSE;
+	}
+true 	{
+		tokenString("KW", yytext);
+		return TRUE;
+	} 
+false 	{
+		tokenString("KW", yytext);
+		return FALSE;
+	} 
+for 	{
+		tokenString("KW", yytext);
+		return FOR;
+	} 
+const 	{
+		tokenString("KW", yytext);
+		return CONST;
+	} 
+int 	{
+		tokenString("KW", yytext);
+		return INT;
+	} 
+print 	{
+		tokenString("KW", yytext);
+		return PRINT;
+	}
+bool 	{
+		tokenString("KW", yytext);
+		return BOOL;
+	} 
+void 	{
+		tokenString("KW", yytext);
+		return VOID;
+	} 
+float 	{
+		tokenString("KW", yytext);
+		return FLOAT;
+	} 
+double 	{
+		tokenString("KW", yytext);
+		return DOUBLE;
+	} 
+string 	{
+		tokenString("KW", yytext);
+		return STRING;
+	}
+continue {
+		tokenString("KW", yytext);
+		return CONTINUE;
+	} 
+break 	{
+		tokenString("KW", yytext);
+		return BREAK;
+	} 
 return	{
 		tokenString("KW", yytext);
+		return RETURN;
 	}
 
 0 |
 [1-9][0-9]* {
 		tokenString("integer", yytext);
+		return INT_CONST;
 	}
 [0-9]+\.[0-9]+	{
 		tokenString("float", yytext);
+		return FLOAT_CONST;
 	}
 
 ([0-9]+|([0-9]*\.[0-9]+))([eE][-+]?[0-9]+)	{
 		tokenString("scientific", yytext);
+		return SCIEN_CONST;
 	}
 "\""	{ 
 		LIST;
@@ -282,7 +366,7 @@ return	{
 <STR>\"	{
 		tokenString("string", strContent);
 		BEGIN INITIAL;
-		
+		return STR_CONST;
 	}
 <STR>[^\\\n\"]	{
 		LIST;
@@ -298,7 +382,7 @@ return	{
 		LIST;
 		if(Last_State == OTHER)Last_State = INITIAL;
 		if (Opt_Source)
-  	        //printf("%d:%s\n", linenum, buf);
+  	        printf("%d:%s\n", linenum, buf);
 		linenum++;
                 buf[0] = '\0';
 	}
@@ -319,7 +403,7 @@ return	{
 \n	{
   	      LIST;
   	      if (Opt_Source)
-  	        //printf("%d:%s\n", linenum, buf);
+  	        printf("%d:%s\n", linenum, buf);
   	      linenum++;
   	      buf[0] = '\0';
         }
@@ -329,6 +413,7 @@ return	{
 			set(&id_head,yytext);
 		}
 		tokenString("id",yytext);
+		return ID;
 	}
 
 .	{
@@ -338,6 +423,7 @@ return	{
 	}
 %%
 
+/*
 int main( int argc, char **argv )
 {
 
@@ -382,6 +468,7 @@ int main( int argc, char **argv )
 
   	exit(0);
 }
+*/
 void set(id **head, char *yytext)
 {
 	id *offset = *head;

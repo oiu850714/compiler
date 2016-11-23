@@ -1,4 +1,4 @@
-#makefile for scanner
+#makefile for parser
 LEX = lex
 LEXFN = lex.l
 CC = gcc
