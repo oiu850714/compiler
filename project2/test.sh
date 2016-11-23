@@ -11,3 +11,9 @@ do
 	echo "${x}"
 	./parser "${x}"
 done
+
+for x in $(ls sample_test_and_result/*.cm);
+do
+	echo "${x}"
+	./parser "${x}"
+done
