@@ -1,0 +1,7 @@
+我的作業包含了兩份 code 跟一份 Makefile。
+	code 分別是 lex.l 跟 parser.y
+		lex.l 是用助教給的 code 改的，做的更改如下：
+			1.把所有不會被丟棄的 token return 給 parser，return 的 Macro 在 parser 內都有定義好。
+			2.多 include y.tab.h 這個 parser 產生的 interface。
+		parser.y
+			My parser implements spec's requirements...
