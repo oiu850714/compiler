@@ -1,31 +1,32 @@
-TARGET = parser
-OBJECT = lex.yy.c y.tab.c y.tab.o lex.yy.o y.output parser y.tab.h main.o
-CC = gcc -g
-LEX = flex
-YACC = yacc -v
-YACCFLAG = -d
-LIBS = -lfl
+#makefile for parser
+LEX = lex
+YACC = yacc
+LEXFN = lex.l
+YACCFN = parser.y
+CC = gcc
+CFLAGS = -O2
+LIBS = -lfl -lbsd -ly
+RM = rm -f
+PARSERRN = parser
+SCANNERSN = lex.yy.c
+PARSERSN = y.tab.c
+INTERFACE = y.tab.h
+YACCVERBOSE = y.output
+TESTFN = whole.cm
+all: parser
 
-all: $(TARGET)
-
-parser: y.tab.o lex.yy.o main.o
-	$(CC) -o $(TARGET) y.tab.o lex.yy.o main.o $(LIBS)
-
-y.tab.o: y.tab.c
-	$(CC) -c y.tab.c
-
-y.tab.c: parser.y
-	$(YACC) $(YACCFLAG) parser.y
-
-lex.yy.o: lex.yy.c
-	$(CC) -c lex.yy.c
-
-lex.yy.c: lex.l
-	$(LEX) lex.l
-
-main.o: main.c
-	$(CC) -c main.c
-
+parser: yacc lex
+	$(CC) -o $(PARSERRN) $(SCANNERSN) $(PARSERSN) $(LIBS)
+yacc:
+	$(YACC) -v -d $(YACCFN) 
+lex:
+	$(LEX) $(LEXFN)
 clean:
-	rm -f $(TARGET) $(OBJECT)
+	$(RM) $(SCANNERSN)
+	$(RM) $(PARSERSN)
+	$(RM) $(PARSERRN)
+	$(RM) $(INTERFACE)
+	$(RM) $(YACCVERBOSE)
+
+	
 

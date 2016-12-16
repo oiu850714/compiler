@@ -1,21 +1,23 @@
 %{
-
+#include <bsd/string.h>
 #include "y.tab.h"
-
-#define LIST                strcat(buf, yytext)
-#define token(t)            {LIST; if (Opt_Token) printf("<%s>\n", #t);}
-#define tokenInteger(t, i)  {LIST; if (Opt_Token) printf("<%s:%d>\n", t, i);}
-#define tokenString(t, s)   {LIST; if (Opt_Token) printf("<%s:%s>\n", t, s);}
-#define MAX_LINE_LENG 256
-#define MAX_ID_LENG 256 
+	
+#define MAX_LINE_LENGTH 257
+#define MAX_ID_LENGTH 257
+#define MAX_STRING_LENGTH 257
+#define LIST                strlcat(buf, yytext, MAX_LINE_LENGTH)
+#define token(t)            {LIST; if (Opt_Token) /*printf("<%s>\n", #t)*/;}
+#define tokenInteger(t, i)  {LIST; if (Opt_Token) /*printf("<%s:%d>\n", t, i)*/;}
+#define tokenString(t, s)   {LIST; if (Opt_Token) /*printf("<%s:%s>\n", t, s)*/;}
 int Opt_Source = 1;
 int Opt_Token = 1;
-int Opt_Statistic = 1;
+int Opt_Statistic =1;
 int linenum = 1;
-char buf[MAX_LINE_LENG];
-char strContent[MAX_LINE_LENG];
+int Last_State = 0;
+char buf[MAX_LINE_LENGTH];
+char strContent[MAX_STRING_LENGTH];
 typedef struct ids{
-	char id_name[256];
+	char id_name[MAX_ID_LENGTH];
 	int freq;
 	struct ids *next;
 } id;
@@ -37,83 +39,77 @@ id *new_id();
 <INITIAL>[\t ]+	{
 		LIST;
 	}
-"#pragma"	{
+^#pragma[\t ]+	{
 		LIST;
 		BEGIN PRAGMA;
 	}
-<PRAGMA>"source"	{
+<PRAGMA>"source"[\t ]+	{
 		LIST;
 		BEGIN SOURCE;
 	}
-<PRAGMA>"token"	{
+<PRAGMA>"token"[\t ]+	{
 		LIST;
 		BEGIN TOKEN;
 	}
-<PRAGMA>"statistic"	{
+<PRAGMA>"statistic"[\t ]+	{
 		LIST;
 		BEGIN STATISTIC;
 	}
 
-<SOURCE>"on"	{
+<SOURCE>"on"[\t ]*	{
 		LIST;
 		Opt_Source = 1;
 		BEGIN OTHER;
 	}
-<SOURCE>"off"	{
+<SOURCE>"off"[\t ]*	{
 		LIST;
 		Opt_Source = 0;
 		BEGIN OTHER;
 	}
-<SOURCE>[\t ]+	{
-		LIST;
+
+<SOURCE>[^\t ]	{
+		//printf("Error at source line %d: %s\n",linenum, yytext);
+                  fprintf(stderr,"Error at line %d: %s\n",linenum,yytext);
+        exit(1);
 	}
-<SOURCE>.	{
-		printf("Error at line %d: %s\n",linenum, yytext);
-        exit(0);
-	}
-<TOKEN>"on"	{
+<TOKEN>"on"[\t ]*	{
 		LIST;
 		Opt_Token = 1;
 		BEGIN OTHER;
 	}
-<TOKEN>"off"	{
+<TOKEN>"off"[\t ]*	{
 		LIST;
 		Opt_Token = 0;
 		BEGIN OTHER;
 	}
-<TOKEN>[\t ]+	{
-		LIST;
+
+<TOKEN>[^\t ]	{
+                 fprintf(stderr,"Error at line %d: %s\n",linenum,yytext);
+        exit(1);
 	}
-<TOKEN>.	{
-		printf("Error at token line %d: %s\n",linenum, yytext);
-        exit(0);
-	}
-<STATISTIC>"on"	{
+
+<STATISTIC>"on"[\t ]*	{
 		LIST;
 		Opt_Statistic = 1;
 		BEGIN OTHER;
 	}
-<STATISTIC>"off"	{
+<STATISTIC>"off"[\t ]*	{
 		LIST;
 		Opt_Statistic = 0;
 		BEGIN OTHER;
 	}
-<STATISTIC>[\t ]+	{
-		LIST;
+
+<STATISTIC>[^\t ]	{
+                 fprintf(stderr,"Error at line %d: %s\n",linenum,yytext);
+        exit(1);
 	}
-<STATISTIC>.	{
-		printf("Error at line %d: %s\n",linenum, yytext);
-        exit(0);
-	}
-<OTHER>"[\t ]*"	{
+<OTHER>\/\/[^\n]*	{
 		LIST;
-	}
-<OTHER>\/\/.*	{
-		LIST;
-		BEGIN INITIAL;
+		
 	}
 <OTHER>"/*"	{
 		LIST;
+        Last_State = OTHER;
 		BEGIN COMMENT;
 	}
 
@@ -125,142 +121,207 @@ id *new_id();
   	      buf[0] = '\0';
 		  BEGIN INITIAL;
 	}
-<OTHER>[^ \t\n]		{
-		printf("Error at line %d: %s\n",linenum, yytext);
-                exit(0);
+
+<OTHER>[^\n]		{
+                  fprintf(stderr,"Error at line %d: %s\n",linenum,yytext);
+                exit(1);
 
 	}
-<PRAGMA>[\t ]+		{
-		LIST;
-	}
-<PRAGMA>.		{
-		printf("Error at pragma line %d: %s\n",linenum, yytext);
-                exit(0);
+
+<PRAGMA>[^\t ]		{
+                  fprintf(stderr,"Error at line %d: %s\n",linenum,yytext);
+                exit(1);
 
 	}
 "("	{
-		tokenString("delim", "(");	return L_PAREN;
+		tokenString("delim", "(");
+		return L_PARAN;
 	}
 ")"	{
-		tokenString("delim", ")");	return R_PAREN;
+		tokenString("delim", ")");
+		return R_PARAN;
 	}
 ","	{
-		tokenString("delim", ",");	return COMMA;
+		tokenString("delim", ",");
+		return COMMA;
 	}
 ";"	{
-		tokenString("delim", ";");	return SEMICOLON;
+		tokenString("delim", ";");
+		return SEMICOLON;
 	}
 "["	{
-		tokenString("delim", "["); 	return ML_BRACE;
+		tokenString("delim", "[");
+		return L_SQUARE;
 	}
 "]"	{
-		tokenString("delim", "]");	return MR_BRACE;
+		tokenString("delim", "]");
+		return R_SQUARE;
 	}
 "{"	{
-		tokenString("delim", "{");	return L_BRACE;
+		tokenString("delim", "{");
+		return L_BRACE;
 	}
 "}"	{
-		tokenString("delim", "}");	return R_BRACE;
+		tokenString("delim", "}");
+		return R_BRACE;
 	}
 "+"	{
-		token("+");	return ADD_OP;
+		token("+");
+		return PLUS;
 	}
 "-"	{
-		token("-");	return SUB_OP;
+		token("-");
+		return SUB_AND_MINUS;
 	}
 "*"	{
-		token("*");	return MUL_OP;
+		token("*");
+		return MULTI;
 	}
 "/"	{
-		token("/");	return DIV_OP;
+		token("/");
+		return DIV;
 	}
 "%"	{
-		token("%");	return MOD_OP;
+		token("%");
+		return MOD;
 	}
 "="	{
-		token("="); return ASSIGN_OP;
+		token("=");
+		return ASSIGN;
 	}
 "<"	{
-		token("<");	return LT_OP;
+		token("<");
+		return LESS;
 	}
 "<="	{
-		token("<=");	return LE_OP;
+		token("<=");
+		return LESS_EQUAL;
 	}
 "!="	{
-		token("!=");	return NE_OP;
+		token("!=");
+		return NOT_EQUAL;
 	}
 ">="	{
-		token(">=");	return GE_OP;
+		token(">=");
+		return GREAT_EQUAL;
 	}
 ">"	{
-		token(">");	return	GT_OP;
+		token(">");
+		return GREAT;
 	}
 "=="	{
-		token("==");	return EQ_OP;
+		token("==");
+		return EQUAL;
 	}
 "&&"	{
-		token("&&");	return AND_OP;
+		token("&&");
+		return LOGI_AND;
 	}
 "||"	{
-		token("||");	return OR_OP;
+		token("||");
+		return LOGI_OR;
 	}
 "!"	{
-		token("!");	return NOT_OP;
+		token("!");
+		return LOGI_NOT;
 	}
-"read"	{tokenString("KW", yytext);	return READ;}
+read	{
+		tokenString("KW", yytext);
+		return READ; 
+	}
+boolean	{
+		tokenString("KW", yytext);
+	}
+while 	{
+		tokenString("KW", yytext);
+		return WHILE; 
+	}
+do 		{
+		tokenString("KW", yytext);
+		return DO;
+	}
+if 		{
+		tokenString("KW", yytext);
+		return IF;
+	}
+else 	{
+		tokenString("KW", yytext);
+		return ELSE;
+	}
+true 	{
+		tokenString("KW", yytext);
+		return TRUE;
+	} 
+false 	{
+		tokenString("KW", yytext);
+		return FALSE;
+	} 
+for 	{
+		tokenString("KW", yytext);
+		return FOR;
+	} 
+const 	{
+		tokenString("KW", yytext);
+		return CONST;
+	} 
+int 	{
+		tokenString("KW", yytext);
+		return INT;
+	} 
+print 	{
+		tokenString("KW", yytext);
+		return PRINT;
+	}
+bool 	{
+		tokenString("KW", yytext);
+		return BOOL;
+	} 
+void 	{
+		tokenString("KW", yytext);
+		return VOID;
+	} 
+float 	{
+		tokenString("KW", yytext);
+		return FLOAT;
+	} 
+double 	{
+		tokenString("KW", yytext);
+		return DOUBLE;
+	} 
+string 	{
+		tokenString("KW", yytext);
+		return STRING;
+	}
+continue {
+		tokenString("KW", yytext);
+		return CONTINUE;
+	} 
+break 	{
+		tokenString("KW", yytext);
+		return BREAK;
+	} 
+return	{
+		tokenString("KW", yytext);
+		return RETURN;
+	}
 
-"boolean"	{tokenString("KW", yytext);	return BOOLEAN;}
-
-"while"	{tokenString("KW", yytext);	return WHILE;}
-
-"do"	{tokenString("KW", yytext);	return DO;}
-
-"if"	{tokenString("KW", yytext);	return IF;}
-
-"else"	{tokenString("KW", yytext);	return ELSE;}
-
-"true"	{tokenString("KW", yytext);	return TRUE;}
-
-"false"	{tokenString("KW", yytext);	return FALSE;}
-
-"for"	{tokenString("KW", yytext);	return FOR;}
-
-"int"	{tokenString("KW", yytext);	return INT;}
-
-"print"	{tokenString("KW", yytext);	return PRINT;}
-
-"bool"	{tokenString("KW", yytext);	return BOOL;}
-
-"void"	{tokenString("KW", yytext);	return VOID;}
-
-"float"	{tokenString("KW", yytext);	return FLOAT;}
-
-"double"	{tokenString("KW", yytext);	return DOUBLE;}
-
-"string"	{tokenString("KW", yytext);	return STRING;}
-
-"continue"	{tokenString("KW", yytext);	return CONTINUE;}
-
-"break"	{tokenString("KW", yytext);	return BREAK;}
-
-"return"	{tokenString("KW", yytext);	return RETURN;}
-
-"const"		{tokenString("KW", yytext);	return CONST;}
-	
--?0 |
+0 |
 [1-9][0-9]* {
-		tokenString("integer", yytext);	return INT_CONST;
+		tokenString("integer", yytext);
+		return INT_CONST;
 	}
 [0-9]+\.[0-9]+	{
-		tokenString("float", yytext);	return FLOAT_CONST;
+		tokenString("float", yytext);
+		return FLOAT_CONST;
 	}
 
 ([0-9]+|([0-9]*\.[0-9]+))([eE][-+]?[0-9]+)	{
-		tokenString("scientific", yytext);	return SCIENTIFIC;
+		tokenString("scientific", yytext);
+		return SCIEN_CONST;
 	}
 "\""	{ 
 		LIST;
-		memset(strContent, 0, MAX_LINE_LENG);
+                strContent[0] = '\0';
 		BEGIN STR;
 	}
 <STR>"\\"	{
@@ -269,71 +330,76 @@ id *new_id();
 	}
 <STR_ESCAPE>\"	{
 		LIST;
-		strcat (strContent, "\"");
+		strlcat (strContent, "\"", MAX_STRING_LENGTH);
 		BEGIN STR;
 	}
 <STR_ESCAPE>n	{
 		LIST;
-		strcat( strContent, "\n");
+		strlcat( strContent, "\\n", MAX_STRING_LENGTH);
 		BEGIN STR;
 	}
 <STR_ESCAPE>t	{
 		LIST;
-		strcat( strContent, "\t");
+		strlcat( strContent, "\\t", MAX_STRING_LENGTH);
 		BEGIN STR;
 	}
 <STR_ESCAPE>\\	{
 		LIST;
-		strcat( strContent, "\\");
+		strlcat( strContent, "\\", MAX_STRING_LENGTH);
 		BEGIN STR;
 	}
+<STR_ESCAPE>\n  {
+    fprintf(stderr, "Error at line %d: %s\n", linenum, yytext);
+    exit(1);
+}
 <STR_ESCAPE>[^\"nt\\]	{
 		LIST;
-		strcat( strContent, "\\");
-		strcat( strContent, yytext);
+		strlcat( strContent, "\\", MAX_STRING_LENGTH);
+		strlcat( strContent, yytext, MAX_STRING_LENGTH);
 		BEGIN STR;
 	}
 <STR>"\n"	{
-		printf("Error at line %d: newline\n", linenum);
-		exit(0);
+                 fprintf(stderr,"Error at line %d: %s\n",linenum,yytext);
+		exit(1);
 	}
 
 <STR>\"	{
-		//LIST;
-		//strcat( buf, "\"");
-		if( Opt_Token)
-			tokenString("string", strContent);
+		tokenString("string", strContent);
 		BEGIN INITIAL;
 		return STR_CONST;
 	}
 <STR>[^\\\n\"]	{
 		LIST;
-		strcat( strContent, yytext);
+		strlcat( strContent, yytext, MAX_STRING_LENGTH);
 	}
 
 "/*"	{
 		LIST;
+        Last_State = INITIAL;
 		BEGIN COMMENT;
 	}
 <COMMENT>"\n"	{
 		LIST;
+		if(Last_State == OTHER)Last_State = INITIAL;
 		if (Opt_Source)
-  	        	printf("%d:%s\n", linenum, buf);
+  	        printf("%d:%s\n", linenum, buf);
 		linenum++;
-		memset( buf, 0, MAX_LINE_LENG );
+                buf[0] = '\0';
 	}
 
 			
 <COMMENT>.	{
 		LIST;
 	}
+
 <COMMENT>"*/"	{
 		LIST;
-		BEGIN INITIAL;
+		BEGIN Last_State;
 	}
 \/\/.*	{
 		LIST;
 	}
+
 \n	{
   	      LIST;
   	      if (Opt_Source)
@@ -346,37 +412,58 @@ id *new_id();
 		if(Opt_Statistic){
 			set(&id_head,yytext);
 		}
-		tokenString("id",yytext);	return ID;
+		tokenString("id",yytext);
+		return ID;
 	}
+
 .	{
-		printf("Error at line %d: %s\n",linenum, yytext);
-		exit(0);
+		//printf("Error at wee line %d: %s\n",linenum, yytext);
+                 fprintf(stderr,"Error at line %d: %s\n",linenum, yytext);
+		exit(1);
 	}
 %%
+
 /*
 int main( int argc, char **argv )
 {
-	if( argc != 2 ) {
+
+	if( argc == 1 )
+	{
+		yyin = stdin;
+	}
+	else if( argc == 2 )
+	{
+		FILE *fp = fopen( argv[1], "r" );
+		if( fp == NULL ) {
+				fprintf( stderr, "Open file error\n" );
+				exit(-1);
+		}
+		yyin = fp;
+	}
+	else
+	{
 	  	fprintf( stderr, "Usage: ./scanner [filename]\n" );
    		exit(0);
- 	}
-  
-  	FILE *fp = fopen( argv[1], "r" );
-  	if( fp == NULL ) {
-    		fprintf( stderr, "Open file error\n" );
-    		exit(-1);
-  	}
-	
-  	yyin = fp;
+ 	} 
+
+
   	id_head = NULL;
 	yylex();
 	
   	if(Opt_Statistic){
+		printf("frequencies of identifiers:\n");
 		id *offset = id_head;
+		id *tobefree = id_head;
   		while(offset){
-    			printf("%s\t%d\n",offset->id_name, offset->freq);
+				printf("%s\t%d\n",offset->id_name, offset->freq);
     			offset = offset->next;
   		}
+		//free linked list
+		while(tobefree){
+			offset = tobefree;
+			tobefree = tobefree->next;
+			free(offset);
+		}
 	}
 
   	exit(0);
