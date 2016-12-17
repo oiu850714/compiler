@@ -1,25 +1,86 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
-int yylex();
-int yyerror( char *msg );
-extern int linenum;             /* declared in lex.l */
-extern FILE *yyin;              /* declared by lex */
-extern char *yytext;            /* declared by lex */
-extern char buf[256];           /* declared in lex.l */
+	#include <stdio.h>
+	#include <stdlib.h>
+	int yylex();
+	int yyerror( char *msg );
+	extern int linenum;             /* declared in lex.l */
+	extern FILE *yyin;              /* declared by lex */
+	extern char *yytext;            /* declared by lex */
+	extern char buf[256];           /* declared in lex.l */
 
-struct symbol_table_level
-{
-	int global_or_local_flag;
-	int level;
-};
 
-struct symbol_table_entry
-{
-	
-};
+
+
+	enum basic_type 
+	{
+		INT_t,
+		FLOAT_t,
+		DOUBLE_t,
+		STRING_t,
+		BOOL_t		
+	};
+
+	struct whole_type
+	{
+		enum basic_type type;
+		int dimemsion_of_type[256]; 
+	};
+
+	//above is variaous columns about symbol table entries.
+
+	struct symbol_table_entry
+	{
+		//a lot of struct to represent columns
+	};
+
+
+	struct symbol_table_level
+	{
+		//represent symbol table's level
+		int global_or_local_flag;
+		int level;
+	};
+
+	struct symbol_table
+	{
+		//struct about symbol table, and use linked list to link all created symbol tables
+		struct symbol_table_level level;
+		struct symbol_table_entry *entries;
+		struct symbol_table *next;
+	};
+
+
+//above is all abunt symbol table implementation
+
+
+	enum operator_t
+	{
+		PLUS_t,
+		SUB_AND_MINUS_t,
+		MULTI_t,
+		DIV_t,
+		MOD_t
+	};
+
+	struct expression_type
+	{
+		enum operator_t operand;
+		enum basic_type type;
+	};
+
+	union const_literal_val
+	{
+		int const_int_value;
+		float const_float_value;
+		double const_double_value;
+		char const_string_value[33];
+		int const_bool_value;
+	};
+
+//above is all new defined types of [non]terminal's attribute
 
 %}
+
 
 
 %union 
@@ -28,41 +89,93 @@ struct symbol_table_entry
 	double float_double_scien_val;
 	//don't know how to handle scientific
 	char ID_string_value[257];
+	struct expression_type exp_type;
 }
 
 /* delimiter */
-%token COMMA SEMICOLON /* , and ; */
-%token L_PARAN R_PARAN L_SQUARE R_SQUARE L_BRACE R_BRACE /* ( ) [ ] { } */
+	%token COMMA 
+	%token SEMICOLON 
+	/* , and ; */
+	
+	%token L_PARAN 
+	%token R_PARAN 
+	%token L_SQUARE 
+	%token R_SQUARE 
+	%token L_BRACE 
+	%token R_BRACE 
+	/* ( ) [ ] { } */
 
 /* operator */
-%token PLUS SUB_AND_MINUS MULTI DIV MOD /* + - * / % */
-%token ASSIGN /* = */
-%token LESS LESS_EQUAL NOT_EQUAL GREAT_EQUAL GREAT EQUAL /* < <= != >= > == */
-%token LOGI_AND LOGI_OR LOGI_NOT /* && || ! */
+	%token PLUS 
+	%token SUB_AND_MINUS 
+	%token MULTI 
+	%token DIV 
+	%token MOD 
+	/* + - * / % */
+	
+	%token ASSIGN 
+	/* = */
+	
+	%token LESS 
+	%token LESS_EQUAL 
+	%token NOT_EQUAL 
+	%token GREAT_EQUAL 
+	%token GREAT 
+	%token EQUAL 
+	/* < <= != >= > == */
+	
+	%token LOGI_AND 
+	%token LOGI_OR 
+	%token LOGI_NOT 
+	/* && || ! */
 
 /* declare precedence */
-%left MULTI DIV MOD
-%left PLUS SUB_AND_MINUS
-%left LESS LESS_EQUAL NOT_EQUAL GREAT_EQUAL GREAT EQUAL
-%right LOGI_NOT
-%left LOGI_AND
-%left LOGI_OR
+	%left MULTI DIV MOD
+	%left PLUS SUB_AND_MINUS
+	%left LESS LESS_EQUAL NOT_EQUAL GREAT_EQUAL GREAT EQUAL
+	%right LOGI_NOT
+	%left LOGI_AND
+	%left LOGI_OR
 
-/* keyword */
-%token WHILE DO IF ELSE TRUE FALSE FOR
-%token INT PRINT CONST READ BOOL
-%token VOID FLOAT DOUBLE STRING CONTINUE BREAK RETURN
-/* while do if else true false for int print const read boolean
- bool void float double string continue break return */
+/* keyword */ 
+	%token WHILE 
+	%token DO 
+	%token IF 
+	%token ELSE 
+	%token TRUE 
+	%token FALSE 
+	%token FOR
+	%token INT 
+	%token PRINT 
+	%token CONST 
+	%token READ 
+	%token BOOL
+	%token VOID 
+	%token FLOAT 
+	%token DOUBLE 
+	%token STRING 
+	%token CONTINUE 
+	%token BREAK 
+	%token RETURN
+	/* while do if else true false for int print const read boolean
+	 bool void float double string continue break return */
 
 /* identifier */
-%token <ID_string_value> ID
+	%token <ID_string_value> ID
 
 /* constant literal */
-%token <int_value> INT_CONST 
-%token <float_double_scien_val> FLOAT_CONST 
-%token <float_double_scien_val> SCIEN_CONST 
-%token <ID_string_value> STR_CONST
+	%token <int_value> INT_CONST 
+	%token <float_double_scien_val> FLOAT_CONST 
+	%token <float_double_scien_val> SCIEN_CONST 
+	%token <ID_string_value> STR_CONST
+
+
+// above should define all tokens returned by lex, and their attribute type.
+
+	%type <const_literal_val> const_literal
+
+// above define all needed attribute types associated with some
+// particular nonterminals.
 
 
 %%
@@ -120,9 +233,7 @@ array_decl : array_decl L_SQUARE INT_CONST R_SQUARE
 		|	 L_SQUARE INT_CONST R_SQUARE
 		;
 
-var_assignment : ASSIGN expression {
-	printf("%s\n", yylval);
-}
+var_assignment : ASSIGN expression
 		|
 		;
 
