@@ -308,15 +308,21 @@ return	{
 0 |
 [1-9][0-9]* {
 		tokenString("integer", yytext);
+		yylval.int_value = atoi(yytext);
+		//project3
 		return INT_CONST;
 	}
 [0-9]+\.[0-9]+	{
 		tokenString("float", yytext);
+		yylval.float_double_scien_val = strtod(yytext, NULL);
+		//project3
 		return FLOAT_CONST;
 	}
 
 ([0-9]+|([0-9]*\.[0-9]+))([eE][-+]?[0-9]+)	{
 		tokenString("scientific", yytext);
+		yylval.float_double_scien_val = strtod(yytext, NULL);
+		//project3
 		return SCIEN_CONST;
 	}
 "\""	{ 
@@ -366,6 +372,8 @@ return	{
 <STR>\"	{
 		tokenString("string", strContent);
 		BEGIN INITIAL;
+		strncpy(yylval.ID_string_value, yytext, 256);
+		//project 3
 		return STR_CONST;
 	}
 <STR>[^\\\n\"]	{
@@ -413,6 +421,8 @@ return	{
 			set(&id_head,yytext);
 		}
 		tokenString("id",yytext);
+		strncpy(yylval.ID_string_value, yytext, 257);
+		//project3
 		return ID;
 	}
 

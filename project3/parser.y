@@ -25,9 +25,9 @@ struct symbol_table_entry
 %union 
 { 
 	int int_value; 
-	float float_double_scien_val;
+	double float_double_scien_val;
 	//don't know how to handle scientific
-	char *ID_string_value;
+	char ID_string_value[257];
 }
 
 /* delimiter */
@@ -212,12 +212,12 @@ jump : RETURN expression SEMICOLON
 func_invoke : ID L_PARAN expressions R_PARAN
 		;
 
-expression : expression PLUS expression { $$ = $1 + $3; }
-		|	 expression SUB_AND_MINUS expression { $$ = $1 - $3; }
-		|	 expression MULTI expression { $$ = $1 * $3; }
-		|	 expression DIV expression { $$ = $1 / $3; }
-		|	 expression MOD expression { $$ = $1 % $3; }
-		|	 SUB_AND_MINUS expression %prec MULTI { $$ = -$1 * $2; }
+expression : expression PLUS expression //{ $$ = $1 + $3; }
+		|	 expression SUB_AND_MINUS expression //{ $$ = $1 - $3; }
+		|	 expression MULTI expression //{ $$ = $1 * $3; }
+		|	 expression DIV expression //{ $$ = $1 / $3; }
+		|	 expression MOD expression //{ $$ = $1 % $3; }
+		|	 SUB_AND_MINUS expression %prec MULTI //{ $$ = -$1 * $2; }
 		|	 expression LESS expression
 		|	 expression LESS_EQUAL expression
 		|	 expression EQUAL expression
@@ -233,12 +233,12 @@ expression : expression PLUS expression { $$ = $1 + $3; }
 		|	 var_ref
 		;
 
-const_literal :	INT_CONST {$$ = atoi($1);}
-		|	 	FLOAT_CONST {$$ = $1;}
-		|	 	SCIEN_CONST {$$ = $1;}
-		|	 	STR_CONST {$$ = $1;}
-		|		TRUE {$$ = $1;}
-		|		FALSE {$$ = $1;}
+const_literal :	INT_CONST //{$$ = atoi($1);}
+		|	 	FLOAT_CONST //{$$ = $1;}
+		|	 	SCIEN_CONST //{$$ = $1;}
+		|	 	STR_CONST //{$$ = $1;}
+		|		TRUE //{$$ = $1;}
+		|		FALSE //{$$ = $1;}
 		;
 
 
