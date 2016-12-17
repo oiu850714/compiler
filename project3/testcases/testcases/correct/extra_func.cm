@@ -1,0 +1,6 @@
+#pragma source on
+
+int func(int a,float b,string c){
+  
+}
+int func(int a,float b,string c);

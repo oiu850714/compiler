@@ -7,6 +7,18 @@ extern int linenum;             /* declared in lex.l */
 extern FILE *yyin;              /* declared by lex */
 extern char *yytext;            /* declared by lex */
 extern char buf[256];           /* declared in lex.l */
+
+struct symbol_table_level
+{
+	int global_or_local_flag;
+	int level;
+};
+
+struct symbol_table_entry
+{
+	
+};
+
 %}
 
 /* delimiter */
@@ -39,6 +51,7 @@ extern char buf[256];           /* declared in lex.l */
 
 /* constant literal */
 %token INT_CONST FLOAT_CONST SCIEN_CONST STR_CONST
+
 
 %%
 
@@ -74,14 +87,20 @@ const_list : const_list COMMA ID ASSIGN exact_one_minus
 			| ID ASSIGN exact_one_minus
 			;
 
+//above insert constant ID to symbol table
+//and const_literal may need some type conversion
+// e.g. const int i = 1.23 //i = i
+// e.g. const int = 'w' //well C- has no character www
+// e.g. const int = "wwww" //
+
 exact_one_minus : const_literal
 			| SUB_AND_MINUS const_literal
 
 var_decl : type var_list SEMICOLON
          ;
 
-var_list : var_list COMMA ID var_assignment
-			| ID var_assignment
+var_list : var_list COMMA ID var_assignment 
+			| ID var_assignment 
 			| var_list COMMA ID array_decl array_assignment
 			| ID array_decl array_assignment
 
@@ -89,7 +108,9 @@ array_decl : array_decl L_SQUARE INT_CONST R_SQUARE
 		|	 L_SQUARE INT_CONST R_SQUARE
 		;
 
-var_assignment : ASSIGN expression
+var_assignment : ASSIGN expression {
+	printf("%s\n", yylval);
+}
 		|
 		;
 
@@ -179,12 +200,12 @@ jump : RETURN expression SEMICOLON
 func_invoke : ID L_PARAN expressions R_PARAN
 		;
 
-expression : expression PLUS expression /*{ $$ = $1 + $3; }*/
-		|	 expression SUB_AND_MINUS expression /*{ $$ = $1 - $3; }*/
-		|	 expression MULTI expression /*{ $$ = $1 * $3; }*/
-		|	 expression DIV expression /*{ $$ = $1 / $3; }*/
-		|	 expression MOD expression /*{ $$ = $1 % $3; }*/
-		|	 SUB_AND_MINUS expression %prec MULTI /*{ $$ = -1 * $2; }*/
+expression : expression PLUS expression { $$ = $1 + $3; }
+		|	 expression SUB_AND_MINUS expression { $$ = $1 - $3; }
+		|	 expression MULTI expression { $$ = $1 * $3; }
+		|	 expression DIV expression { $$ = $1 / $3; }
+		|	 expression MOD expression { $$ = $1 % $3; }
+		|	 SUB_AND_MINUS expression %prec MULTI { $$ = -$1 * $2; }
 		|	 expression LESS expression
 		|	 expression LESS_EQUAL expression
 		|	 expression EQUAL expression
@@ -200,12 +221,12 @@ expression : expression PLUS expression /*{ $$ = $1 + $3; }*/
 		|	 var_ref
 		;
 
-const_literal :	INT_CONST
-		|	 	FLOAT_CONST
-		|	 	SCIEN_CONST
-		|	 	STR_CONST
-		|		TRUE
-		|		FALSE
+const_literal :	INT_CONST {$$ = atoi($1);}
+		|	 	FLOAT_CONST {$$ = $1;}
+		|	 	SCIEN_CONST {$$ = $1;}
+		|	 	STR_CONST {$$ = $1;}
+		|		TRUE {$$ = $1;}
+		|		FALSE {$$ = $1;}
 		;
 
 
