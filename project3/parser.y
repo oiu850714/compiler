@@ -21,6 +21,15 @@ struct symbol_table_entry
 
 %}
 
+
+%union 
+{ 
+	int int_value; 
+	float float_double_scien_val;
+	//don't know how to handle scientific
+	char *ID_string_value;
+}
+
 /* delimiter */
 %token COMMA SEMICOLON /* , and ; */
 %token L_PARAN R_PARAN L_SQUARE R_SQUARE L_BRACE R_BRACE /* ( ) [ ] { } */
@@ -47,10 +56,13 @@ struct symbol_table_entry
  bool void float double string continue break return */
 
 /* identifier */
-%token ID
+%token <ID_string_value> ID
 
 /* constant literal */
-%token INT_CONST FLOAT_CONST SCIEN_CONST STR_CONST
+%token <int_value> INT_CONST 
+%token <float_double_scien_val> FLOAT_CONST 
+%token <float_double_scien_val> SCIEN_CONST 
+%token <ID_string_value> STR_CONST
 
 
 %%
