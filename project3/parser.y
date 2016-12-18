@@ -1,6 +1,8 @@
 %{
 	#include <stdio.h>
 	#include <stdlib.h>
+	#include "attr_type.h"
+	//this include let %union shut up
 	int yylex();
 	int yyerror( char *msg );
 	extern int linenum;             /* declared in lex.l */
@@ -11,73 +13,8 @@
 
 
 
-	enum basic_type 
-	{
-		INT_t,
-		FLOAT_t,
-		DOUBLE_t,
-		STRING_t,
-		BOOL_t		
-	};
-
-	struct whole_type
-	{
-		enum basic_type type;
-		int dimemsion_of_type[256]; 
-	};
-
-	//above is variaous columns about symbol table entries.
-
-	struct symbol_table_entry
-	{
-		//a lot of struct to represent columns
-	};
 
 
-	struct symbol_table_level
-	{
-		//represent symbol table's level
-		int global_or_local_flag;
-		int level;
-	};
-
-	struct symbol_table
-	{
-		//struct about symbol table, and use linked list to link all created symbol tables
-		struct symbol_table_level level;
-		struct symbol_table_entry *entries;
-		struct symbol_table *next;
-	};
-
-
-//above is all abunt symbol table implementation
-
-
-	enum operator_t
-	{
-		PLUS_t,
-		SUB_AND_MINUS_t,
-		MULTI_t,
-		DIV_t,
-		MOD_t
-	};
-
-	struct expression_type
-	{
-		enum operator_t operand;
-		enum basic_type type;
-	};
-
-	union const_literal_val
-	{
-		int const_int_value;
-		float const_float_value;
-		double const_double_value;
-		char const_string_value[33];
-		int const_bool_value;
-	};
-
-//above is all new defined types of [non]terminal's attribute
 
 %}
 
@@ -88,8 +25,10 @@
 	int int_value; 
 	double float_double_scien_val;
 	//don't know how to handle scientific
+	int true_false_val;
 	char ID_string_value[257];
 	struct expression_type exp_type;
+	union const_literal_val const_val;
 }
 
 /* delimiter */
@@ -142,8 +81,8 @@
 	%token DO 
 	%token IF 
 	%token ELSE 
-	%token TRUE 
-	%token FALSE 
+	%token <true_false_val> TRUE
+	%token <true_false_val> FALSE 
 	%token FOR
 	%token INT 
 	%token PRINT 
@@ -172,7 +111,8 @@
 
 // above should define all tokens returned by lex, and their attribute type.
 
-	%type <const_literal_val> const_literal
+	%type <const_val> const_literal
+	%type <expression_type> expression
 
 // above define all needed attribute types associated with some
 // particular nonterminals.
@@ -344,12 +284,12 @@ expression : expression PLUS expression //{ $$ = $1 + $3; }
 		|	 var_ref
 		;
 
-const_literal :	INT_CONST //{$$ = atoi($1);}
-		|	 	FLOAT_CONST //{$$ = $1;}
-		|	 	SCIEN_CONST //{$$ = $1;}
-		|	 	STR_CONST //{$$ = $1;}
-		|		TRUE //{$$ = $1;}
-		|		FALSE //{$$ = $1;}
+const_literal :	INT_CONST {$$.const_int_value = $1;}
+		|	 	FLOAT_CONST {$$.const_float_double_value = $1;}
+		|	 	SCIEN_CONST {$$.const_float_double_value = $1;}
+		|	 	STR_CONST { strncpy($$.const_string_value, $1, 256); }
+		|		TRUE {$$.const_bool_value = $1;}
+		|		FALSE {$$.const_bool_value = $1;}
 		;
 
 

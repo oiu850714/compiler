@@ -1,6 +1,8 @@
 %{
 #include <bsd/string.h>
+#include "attr_type.h"
 #include "y.tab.h"
+#include <string.h>
 	
 #define MAX_LINE_LENGTH 257
 #define MAX_ID_LENGTH 257
@@ -250,10 +252,12 @@ else 	{
 	}
 true 	{
 		tokenString("KW", yytext);
+		yylval.true_false_val = 1;
 		return TRUE;
 	} 
 false 	{
 		tokenString("KW", yytext);
+		yylval.true_false_val = 0;
 		return FALSE;
 	} 
 for 	{
