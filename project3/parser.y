@@ -1,6 +1,7 @@
 %{
 	#include <stdio.h>
 	#include <stdlib.h>
+	#include <string.h>
 	#include "attr_type.h"
 	//this include let %union shut up
 	int yylex();
@@ -22,13 +23,15 @@
 
 %union 
 { 
-	int int_value; 
-	double float_double_scien_val;
+
+	int INT_CONST_attr; 
+	double FLOAT_CONST_attr;
+	double SCIEN_CONST_attr;
 	//don't know how to handle scientific
-	int true_false_val;
-	char ID_string_value[257];
-	struct expression_type exp_type;
-	union const_literal_val const_val;
+	int TRUE_FALSE_attr;
+	char ID_STR_CONST_attr[257];
+	struct expression_ATTR expression_attr;
+	union const_literal_ATTR const_literal_attr;
 }
 
 /* delimiter */
@@ -81,8 +84,8 @@
 	%token DO 
 	%token IF 
 	%token ELSE 
-	%token <true_false_val> TRUE
-	%token <true_false_val> FALSE 
+	%token <TRUE_FALSE_attr> TRUE
+	%token <TRUE_FALSE_attr> FALSE 
 	%token FOR
 	%token INT 
 	%token PRINT 
@@ -100,19 +103,19 @@
 	 bool void float double string continue break return */
 
 /* identifier */
-	%token <ID_string_value> ID
+	%token <ID_STR_CONST_attr> ID
 
 /* constant literal */
-	%token <int_value> INT_CONST 
-	%token <float_double_scien_val> FLOAT_CONST 
-	%token <float_double_scien_val> SCIEN_CONST 
-	%token <ID_string_value> STR_CONST
+	%token <INT_CONST_attr> INT_CONST 
+	%token <FLOAT_CONST_attr> FLOAT_CONST 
+	%token <SCIEN_CONST_attr> SCIEN_CONST 
+	%token <ID_STR_CONST_attr> STR_CONST
 
 
 // above should define all tokens returned by lex, and their attribute type.
 
-	%type <const_val> const_literal
-	%type <expression_type> expression
+	%type <const_literal_attr> const_literal
+	%type <expression_ATTR> expression
 
 // above define all needed attribute types associated with some
 // particular nonterminals.
@@ -279,7 +282,7 @@ expression : expression PLUS expression //{ $$ = $1 + $3; }
 		|	 expression LOGI_OR expression
 		|	 LOGI_NOT expression
 		|	 L_PARAN expression R_PARAN
-		|	 const_literal
+		|	 const_literal 
 		|	 func_invoke
 		|	 var_ref
 		;

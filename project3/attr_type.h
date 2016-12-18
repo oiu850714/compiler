@@ -50,7 +50,7 @@ enum operator_t
 	MOD_t,
 };
 
-struct expression_type
+struct expression_ATTR
 {
 	enum operator_t operand;
 	enum basic_type type;
@@ -63,7 +63,7 @@ struct expression_type
 //above is all new defined types of [non]terminal's attribute
 
 
-union const_literal_val
+union const_literal_ATTR
 {
 	int const_int_value;
 	double const_float_double_value;

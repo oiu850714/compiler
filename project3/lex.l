@@ -252,12 +252,12 @@ else 	{
 	}
 true 	{
 		tokenString("KW", yytext);
-		yylval.true_false_val = 1;
+		yylval.TRUE_FALSE_attr = 1;
 		return TRUE;
 	} 
 false 	{
 		tokenString("KW", yytext);
-		yylval.true_false_val = 0;
+		yylval.TRUE_FALSE_attr = 0;
 		return FALSE;
 	} 
 for 	{
@@ -312,20 +312,20 @@ return	{
 0 |
 [1-9][0-9]* {
 		tokenString("integer", yytext);
-		yylval.int_value = atoi(yytext);
+		yylval.INT_CONST_attr = atoi(yytext);
 		//project3
 		return INT_CONST;
 	}
 [0-9]+\.[0-9]+	{
 		tokenString("float", yytext);
-		yylval.float_double_scien_val = strtod(yytext, NULL);
+		yylval.FLOAT_CONST_attr = strtod(yytext, NULL);
 		//project3
 		return FLOAT_CONST;
 	}
 
 ([0-9]+|([0-9]*\.[0-9]+))([eE][-+]?[0-9]+)	{
 		tokenString("scientific", yytext);
-		yylval.float_double_scien_val = strtod(yytext, NULL);
+		yylval.SCIEN_CONST_attr = strtod(yytext, NULL);
 		//project3
 		return SCIEN_CONST;
 	}
@@ -376,7 +376,7 @@ return	{
 <STR>\"	{
 		tokenString("string", strContent);
 		BEGIN INITIAL;
-		strncpy(yylval.ID_string_value, yytext, 256);
+		strncpy(yylval.ID_STR_CONST_attr, yytext, 256);
 		//project 3
 		return STR_CONST;
 	}
@@ -425,7 +425,7 @@ return	{
 			set(&id_head,yytext);
 		}
 		tokenString("id",yytext);
-		strncpy(yylval.ID_string_value, yytext, 257);
+		strncpy(yylval.ID_STR_CONST_attr, yytext, 257);
 		//project3
 		return ID;
 	}
