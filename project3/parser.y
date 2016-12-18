@@ -13,6 +13,68 @@
 
 
 
+	enum  basic_type get_exp_type(enum  basic_type type1, enum  basic_type type2)
+	{
+		if(type1 == DOUBLE_t || type2 == DOUBLE_t)
+			return DOUBLE_t;
+		else if(type1 == FLOAT_t || type2 == FLOAT_t)
+			return FLOAT_t;
+		else
+			return INT_t;
+	}
+
+	void initial_new_symbol_table(struct symbol_table *head)
+	{
+
+		struct symbol_table* tmp = 
+				(struct symbol_table*)malloc(sizeof(struct symbol_table));
+		tmp -> level.global_or_local_flag = 0;
+		tmp -> entries = NULL;
+		tmp -> next = head;
+		if(head == NULL)
+			head = tmp;
+		else
+			head -> next = tmp;
+	}
+
+	void clear_entries(struct symbol_table_entry *entries)
+	{
+		while(entries)
+		{
+			struct symbol_table_entry *tmp = entries -> next;
+			free(entries);
+			entries = tmp;
+		}
+	}
+
+	void exit_scope(struct symbol_table *head)
+	{
+		struct symbol_table* tmp = head -> next;
+		clear_entries(head->entries);
+		free(head);
+		head = tmp;
+	}
+
+	struct symbol_table *head = NULL;
+
+	int check_declare(char *str, struct symbol_table *head)
+	{
+		symbol_table_entry *tmp = head->entries;
+		while(tmp)
+		{
+			if(strcmp(str, tmp->var_name))
+			{
+				tmp = tmp->next;
+			}
+			else
+			{
+				printf("fuckyou error\n");
+				return 1;
+			}
+		}
+		return 0;
+	}
+
 
 
 
@@ -31,7 +93,7 @@
 	int TRUE_FALSE_attr;
 	char ID_STR_CONST_attr[257];
 	struct expression_ATTR expression_attr;
-	union const_literal_ATTR const_literal_attr;
+	struct const_literal_ATTR const_literal_attr;
 }
 
 /* delimiter */
@@ -115,7 +177,7 @@
 // above should define all tokens returned by lex, and their attribute type.
 
 	%type <const_literal_attr> const_literal
-	%type <expression_ATTR> expression
+	%type <expression_attr> expression
 
 // above define all needed attribute types associated with some
 // particular nonterminals.
@@ -124,35 +186,49 @@
 %%
 
 program : declaration_list decl_and_def_list
+
 	| decl_and_def_list
+
 	;
 
 decl_and_def_list	: decl_and_def_list const_decl
+
 					| decl_and_def_list var_decl
+
 					| decl_and_def_list funct_decl
+
 					| decl_and_def_list funct_definition
+
 			        | funct_definition
+
 					;
 
-
-
-
 declaration_list : declaration_list const_decl
+
                  | declaration_list var_decl
+
                  | declaration_list funct_decl
+
                  | const_decl
+
                  | var_decl
+
                  | funct_decl
+
 				 ;
 
 funct_definition : type ID L_PARAN formal_arg_list R_PARAN compound
+
 				;
 
 const_decl : CONST type const_list SEMICOLON;
+
 		;
 
 const_list : const_list COMMA ID ASSIGN exact_one_minus
+
 			| ID ASSIGN exact_one_minus
+
 			;
 
 //above insert constant ID to symbol table
@@ -162,141 +238,313 @@ const_list : const_list COMMA ID ASSIGN exact_one_minus
 // e.g. const int = "wwww" //
 
 exact_one_minus : const_literal
+
 			| SUB_AND_MINUS const_literal
 
 var_decl : type var_list SEMICOLON
+
          ;
 
 var_list : var_list COMMA ID var_assignment 
+
 			| ID var_assignment 
+
 			| var_list COMMA ID array_decl array_assignment
+
 			| ID array_decl array_assignment
 
 array_decl : array_decl L_SQUARE INT_CONST R_SQUARE
+
 		|	 L_SQUARE INT_CONST R_SQUARE
+
 		;
 
 var_assignment : ASSIGN expression
+
 		|
+
 		;
 
 array_assignment : ASSIGN L_BRACE expressions R_BRACE
+
 		|
+
 		;
 
 expressions : expression_fuck
+
 		|
+
 		;
 
 expression_fuck : expression
+
 		| expression_fuck COMMA expression
+
 // trick for fucking COMMA
 
 funct_decl : type ID L_PARAN formal_arg_list R_PARAN SEMICOLON
+
          ;
 
-
 formal_arg_list : type_id
+
 			|
+
 			;
 
 type_id : type_id COMMA type ID array_decl
+
 			| type ID array_decl
+
 			| type_id COMMA type ID
+
 			| type ID
+
 			;
 
 statements : statements compound
+
 		| statements simple
+
 		| statements conditional
+
 		| statements while
+
 		| statements for
+
 		| statements jump
+
 		| statements func_invoke SEMICOLON
+
 		// above let func_invoke be used both in statements and expressions
+
 		| statements declaration_list
+
 		|
+
 		;
 
-compound : L_BRACE statements R_BRACE
+compound : L_BRACE enter_new_scope statements R_BRACE exit_scope
+
 		;
+
+enter_new_scope :
+		{
+			initial_new_symbol_table(head);
+		}
+	;
+
+exit_scope :
+		{
+			exit_scope(head);
+			printf("win!!!!!!!!!\n");
+		}
+	;
 
 simple : var_ref ASSIGN expression SEMICOLON
+
 		| PRINT var_ref SEMICOLON
+
 		| PRINT expression SEMICOLON
+
 		| READ var_ref SEMICOLON
+
 		;
 
-
 var_ref : ID array_ref
+
 		;
 
 array_ref : array_ref L_SQUARE expression R_SQUARE
+
 		|
+
 		;
+
 // array_ref 0+ []
 
 conditional : IF L_PARAN expression R_PARAN compound
+
 		| IF L_PARAN expression R_PARAN compound ELSE compound
+
 		;
 
 while : WHILE L_PARAN expression R_PARAN compound
+
 		| DO compound WHILE L_PARAN expression R_PARAN SEMICOLON
+
 		;
 
 for : FOR L_PARAN for_exp SEMICOLON for_exp SEMICOLON for_exp R_PARAN compound
+
 	| FOR L_PARAN for_exp SEMICOLON for_exp SEMICOLON  R_PARAN compound
+
 	| FOR L_PARAN for_exp SEMICOLON SEMICOLON for_exp R_PARAN compound
+
 	| FOR L_PARAN for_exp SEMICOLON SEMICOLON R_PARAN compound
+
 	| FOR L_PARAN SEMICOLON for_exp SEMICOLON for_exp R_PARAN compound
+
 	| FOR L_PARAN SEMICOLON for_exp SEMICOLON  R_PARAN compound
+
 	| FOR L_PARAN SEMICOLON SEMICOLON for_exp R_PARAN compound
+
 	| FOR L_PARAN SEMICOLON SEMICOLON R_PARAN compound
+
 		;
 
 for_exp : expression
+
 		| var_ref ASSIGN expression
+
 		;
 
 jump : RETURN expression SEMICOLON
+
 	|	BREAK SEMICOLON
+
 	|	CONTINUE SEMICOLON
+
 		;
-		
+
 func_invoke : ID L_PARAN expressions R_PARAN
+
 		;
 
-expression : expression PLUS expression //{ $$ = $1 + $3; }
-		|	 expression SUB_AND_MINUS expression //{ $$ = $1 - $3; }
-		|	 expression MULTI expression //{ $$ = $1 * $3; }
-		|	 expression DIV expression //{ $$ = $1 / $3; }
-		|	 expression MOD expression //{ $$ = $1 % $3; }
-		|	 SUB_AND_MINUS expression %prec MULTI //{ $$ = -$1 * $2; }
+expression : expression PLUS expression 
+			{
+				$$.type = get_exp_type ($1.type ,$3.type); 
+			}
+		|	 expression SUB_AND_MINUS expression 
+			{
+				$$.type = get_exp_type ($1.type ,$3.type); 
+			}
+		|	 expression MULTI expression 
+			{
+				$$.type = get_exp_type ($1.type ,$3.type); 
+			}
+		|	 expression DIV expression 
+			{
+				$$.type = get_exp_type ($1.type ,$3.type); 
+			}
+		|	 expression MOD expression
+			{
+				if($1.type != INT_t || $3.type != INT_t)
+				{
+					printf("fuck you!\n");
+					exit(1);
+				}
+				$$.type = INT_t;
+			}
+		|	 SUB_AND_MINUS expression %prec MULTI
+			{
+				$$.type = $2.type;
+			}
+
 		|	 expression LESS expression
+			{
+				$$.type = BOOL_t;
+			}
 		|	 expression LESS_EQUAL expression
+			{
+				$$.type = BOOL_t;
+			}
+
 		|	 expression EQUAL expression
+			{
+				$$.type = BOOL_t;
+			}
+
 		|	 expression GREAT_EQUAL expression
+			{
+				$$.type = BOOL_t;
+			}
+
 		|	 expression GREAT expression
+			{
+				$$.type = BOOL_t;
+			}
+
 		|	 expression NOT_EQUAL expression
+			{
+				$$.type = BOOL_t;
+			}
+
 		|	 expression LOGI_AND expression
+			{
+				$$.type = BOOL_t;
+			}
+
 		|	 expression LOGI_OR expression
-		|	 LOGI_NOT expression
-		|	 L_PARAN expression R_PARAN
-		|	 const_literal 
+			{
+				$$.type = BOOL_t;
+			}
+
+		|	 LOGI_NOT expression 
+			{
+				$$.type = BOOL_t;
+			}
+
+		|	 L_PARAN expression R_PARAN { $$ = $2; }
+
+		|	 const_literal
+			{
+				$$.type = $1.type;
+			}
+
 		|	 func_invoke
+
 		|	 var_ref
+
+		// var_ref seems need a lot work
 		;
 
-const_literal :	INT_CONST {$$.const_int_value = $1;}
-		|	 	FLOAT_CONST {$$.const_float_double_value = $1;}
-		|	 	SCIEN_CONST {$$.const_float_double_value = $1;}
-		|	 	STR_CONST { strncpy($$.const_string_value, $1, 256); }
-		|		TRUE {$$.const_bool_value = $1;}
-		|		FALSE {$$.const_bool_value = $1;}
+const_literal :	INT_CONST 
+				{
+					$$.val.const_int_value = $1;
+					$$.type = INT_t;
+				}
+		|	 	FLOAT_CONST 
+				{
+					$$.val.const_float_double_value = $1;
+					$$.type = FLOAT_t;
+				}
+		|	 	SCIEN_CONST 
+				{
+					$$.val.const_float_double_value = $1;
+					$$.type = FLOAT_t;
+				}
+		|	 	STR_CONST 
+				{ 
+					strncpy($$.val.const_string_value, $1, 256);
+					$$.type = STRING_t;
+				}
+		|		TRUE 
+				{
+					$$.val.const_bool_value = $1;
+					$$.type = BOOL_t;
+				}
+		|		FALSE 
+				{
+					$$.val.const_bool_value = $1;
+					$$.type = BOOL_t;
+				}
 		;
 
 
-type : INT| DOUBLE| FLOAT| STRING| BOOL| VOID
+type : INT
+
+	| DOUBLE
+
+	| FLOAT
+
+	| STRING
+
+	| BOOL
+
+	| VOID
+
      ; 
 
 %%
@@ -310,6 +558,7 @@ int yyerror( char *msg )
   fprintf( stderr, "|--------------------------------------------------------------------------\n" );
   exit(-1);
 }
+
 
 int  main( int argc, char **argv )
 {
@@ -325,6 +574,7 @@ int  main( int argc, char **argv )
 		exit(-1);
 	}
 	
+	initial_new_symbol_table(head);
 	yyin = fp;
 	yyparse();
 

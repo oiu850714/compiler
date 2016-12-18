@@ -11,14 +11,27 @@
 	struct whole_type
 	{
 		enum basic_type type;
-		int dimemsion_of_type[256]; 
+		int dimemsions_of_type[256]; 
+	};
+
+	enum kind
+	{
+		function,
+		parameter,
+		variable,
+		constant
 	};
 
 	//above is variaous columns about symbol table entries.
 
 	struct symbol_table_entry
 	{
+		char var_name[257];
+		enum kind kind_t;
+		//not implement level in this struct, cause symbol table already has it.
+		struct  whole_type type;
 		//a lot of struct to represent columns
+		struct symbol_table_entry *next;
 	};
 
 
@@ -26,6 +39,7 @@
 	{
 		//represent symbol table's level
 		int global_or_local_flag;
+		//global = 0, local = 1; 
 		int level;
 	};
 
@@ -52,7 +66,6 @@ enum operator_t
 
 struct expression_ATTR
 {
-	enum operator_t operand;
 	enum basic_type type;
 };
 
@@ -63,10 +76,19 @@ struct expression_ATTR
 //above is all new defined types of [non]terminal's attribute
 
 
-union const_literal_ATTR
+union const_literal_val
 {
 	int const_int_value;
 	double const_float_double_value;
 	char const_string_value[257];
 	int const_bool_value;
 };
+
+struct const_literal_ATTR
+{
+	union const_literal_val val;
+	enum basic_type type;
+};
+
+
+
