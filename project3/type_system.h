@@ -1,3 +1,4 @@
+#include <stdlib.h>
 
 typedef enum 
 {
@@ -52,36 +53,46 @@ typedef struct SYMBOL_TABLE
 
 symbol_table *table_list_head = NULL;
 
+void new_symbol_table();
+void exit_scope();
+void clear_entries();
+void add_id(entry e);
+// so we need all entry inforamation when add new id into symbol table
 
 //use fucking shit global variable table_list in functions below
-/*
+
 void new_symbol_table()
 {
 	symbol_table* tmp = (symbol_table*)malloc(sizeof(symbol_table));
-	tmp -> level.global_or_local_flag = 0;
-	tmp -> entries = NULL;
-	tmp -> next = head;
 	if(table_list_head == NULL)
+	{
 		table_list_head = tmp;
+		table_list_head -> level = 0;
+		table_list_head -> next = NULL;
+	}
 	else
-		table_list -> next = tmp;
+	{
+		tmp -> next = table_list_head;
+		table_list_head = tmp;
+		table_list_head -> level = tmp -> level + 1;
+	}
+	table_list_head -> entry_list = NULL;
 }
 
-void clear_entries(struct symbol_table_entry *entries)
+void exit_scope()
 {
-	while(entries)
+	symbol_table *tmp = table_list_head -> next;
+	clear_entries();
+	free(table_list_head);
+	table_list_head = tmp;
+}
+
+void clear_entries()
+{
+	while(table_list_head -> entry_list)
 	{
-		struct symbol_table_entry *tmp = entries -> next;
-		free(entries);
-		entries = tmp;
+		entry *tmp = table_list_head -> entry_list -> next;
+		free(table_list_head -> entry_list);
+		table_list_head -> entry_list = tmp;
 	}
 }
-
-void exit_scope(struct symbol_table *head)
-{
-	struct symbol_table* tmp = head -> next;
-	clear_entries(head->entries);
-	free(head);
-	head = tmp;
-}
-*/

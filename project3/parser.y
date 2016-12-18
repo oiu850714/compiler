@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include "type_system.h"
 int yylex();
 int yyerror( char *msg );
 extern int linenum;             /* declared in lex.l */

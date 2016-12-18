@@ -1,5 +1,6 @@
 %{
 #include <bsd/string.h>
+#include "type_system.h"
 #include "y.tab.h"
 	
 #define MAX_LINE_LENGTH 257
