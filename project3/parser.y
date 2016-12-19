@@ -11,14 +11,31 @@ extern char buf[256];           /* declared in lex.l */
 %}
 
 /* delimiter */
-%token COMMA SEMICOLON /* , and ; */
-%token L_PARAN R_PARAN L_SQUARE R_SQUARE L_BRACE R_BRACE /* ( ) [ ] { } */
+%token COMMA 
+%token SEMICOLON /* , and ; */
+%token L_PARAN 
+%token R_PARAN 
+%token L_SQUARE 
+%token R_SQUARE 
+%token L_BRACE 
+%token R_BRACE /* ( ) [ ] { } */
 
 /* operator */
-%token PLUS SUB_AND_MINUS MULTI DIV MOD /* + - * / % */
+%token PLUS 
+%token SUB_AND_MINUS 
+%token MULTI 
+%token DIV 
+%token MOD /* + - * / % */
 %token ASSIGN /* = */
-%token LESS LESS_EQUAL NOT_EQUAL GREAT_EQUAL GREAT EQUAL /* < <= != >= > == */
-%token LOGI_AND LOGI_OR LOGI_NOT /* && || ! */
+%token LESS 
+%token LESS_EQUAL 
+%token NOT_EQUAL 
+%token GREAT_EQUAL 
+%token GREAT 
+%token EQUAL /* < <= != >= > == */
+%token LOGI_AND 
+%token LOGI_OR 
+%token LOGI_NOT /* && || ! */
 
 %left MULTI DIV MOD
 %left PLUS SUB_AND_MINUS
@@ -28,9 +45,25 @@ extern char buf[256];           /* declared in lex.l */
 %left LOGI_OR
 
 /* keyword */
-%token WHILE DO IF ELSE TRUE FALSE FOR
-%token INT PRINT CONST READ BOOL
-%token VOID FLOAT DOUBLE STRING CONTINUE BREAK RETURN
+%token WHILE 
+%token DO 
+%token IF 
+%token ELSE 
+%token TRUE 
+%token FALSE 
+%token FOR
+%token INT 
+%token PRINT 
+%token CONST 
+%token READ 
+%token BOOL
+%token VOID 
+%token FLOAT 
+%token DOUBLE 
+%token STRING 
+%token CONTINUE 
+%token BREAK 
+%token RETURN
 /* while do if else true false for int print const read boolean
  bool void float double string continue break return */
 
@@ -38,7 +71,10 @@ extern char buf[256];           /* declared in lex.l */
 %token ID
 
 /* constant literal */
-%token INT_CONST FLOAT_CONST SCIEN_CONST STR_CONST
+%token INT_CONST 
+%token FLOAT_CONST
+%token SCIEN_CONST
+%token STR_CONST
 
 %%
 
