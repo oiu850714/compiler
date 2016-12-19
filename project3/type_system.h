@@ -9,6 +9,7 @@ typedef enum
 	STR_t,
 	BOOL_t
 } basic_type;
+//need store function's return type
 
 typedef struct 
 {
@@ -40,11 +41,13 @@ typedef union
 	float CONST_FLOAT_val;
 	double CONST_DOUBLE_val;
 	char CONST_STR_val[257];
+	int CONST_BOOL_val;
 } const_val;
 
 typedef struct
 {
-	whole_type func_para_type[256];
+	int num_of_para;
+	whole_type para_type[256];
 	whole_type return_type;
 } func_para_list;
 
@@ -52,7 +55,6 @@ typedef union
 {
 	const_val attr_const_val;
 	func_para_list attr_function;
-
 } attr;
 
 typedef struct ENTRY
@@ -132,7 +134,7 @@ void entry_add_dimension(entry *e_ptr, int length)
 	// notice about zero-start convention!!
 }
 
-void entry_add_type(entry *e_ptr, basic_type t)
+void entry_add_basic_type(entry *e_ptr, basic_type t)
 {
 	e_ptr -> type_column.basic = t;
 }
@@ -146,6 +148,44 @@ void entry_add_kind(entry *e_ptr, kind kind_t)
 {
 	e_ptr -> kind_column = kind_t;
 }
+
+void entry_add_attr(entry *e_ptr, attr *a_ptr)
+{
+	/*if(e_ptr -> kind_column == function)
+	{
+		e_ptr -> attr_column = *a_ptr;
+	}
+	else if (e_ptr -> kind_column == constant)
+	{
+		switch(e_ptr -> type_column.basic)
+		{
+			INT_t:
+				e_ptr -> attr_column.attr_const_val.CONST_INT_val
+			 			= a_ptr -> attr_const_val.CONST_INT_val;
+				break;
+			FLOAT_t:
+				e_ptr -> attr_column.attr_const_val.CONST_FLOAT_val
+			 			= a_ptr -> attr_const_val.CONST_FLOAT_val;
+				break;
+			DOUBLE_t:
+				e_ptr -> attr_column.attr_const_val.CONST_DOUBLE_val
+			 			= a_ptr -> attr_const_val.CONST_DOUBLE_val;
+				break;
+			STR_t:
+				e_ptr -> attr_column.attr_const_val.CONST_INT_val
+			 			= a_ptr -> attr_const_val.CONST_INT_val;
+				break;
+			BOOL_t:
+				e_ptr -> attr_column.attr_const_val.CONST_BOOL_val
+			 			= a_ptr -> attr_const_val.CONST_BOOL_val;
+				break;
+		}
+	}*/
+	e_ptr -> attr_column = *a_ptr;
+	//??????????????????
+}
+//this function currently must know the "kind" and "type" of entry 
+//to add corresponding attr in "attr"
 
 int main(int argc, char const *argv[])
 {
